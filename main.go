@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -22,7 +23,7 @@ type URIJson struct {
 func main() {
 
 	http.HandleFunc("/random", RenderRandom)
-	http.ListenAndServe(":80", nil)
+	http.ListenAndServe(":"+os.Getenv("PORT"), nil)
 }
 
 func RenderRandom(w http.ResponseWriter, req *http.Request) {
