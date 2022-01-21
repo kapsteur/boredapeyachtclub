@@ -1,1 +1,1 @@
-web: ls -alh ./bin && ./bin/main
+web: ./bin/main
