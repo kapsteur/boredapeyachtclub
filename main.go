@@ -35,7 +35,7 @@ func main() {
 func RenderRandom(w http.ResponseWriter, req *http.Request) {
 
 	params := req.URL.Query()
-	refresh := 1000
+	refresh := 30
 	if params.Get("refresh") != "" {
 		refreshTmp, err := strconv.Atoi(params.Get("refresh"))
 		if err == nil {
