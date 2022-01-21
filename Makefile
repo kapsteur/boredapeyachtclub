@@ -1,4 +1,4 @@
-run: create bin/main
+run: bin/main
 	@PATH="$(PWD)/bin:$(PATH)" heroku local
 
 bin/main: main.go
