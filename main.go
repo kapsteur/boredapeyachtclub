@@ -22,6 +22,8 @@ type URIJson struct {
 
 func main() {
 
+	log.Printf("APP Started")
+	log.Printf("PORT:%s", os.Getenv("PORT"))
 	http.HandleFunc("/random", RenderRandom)
 	http.ListenAndServe(":"+os.Getenv("PORT"), nil)
 }
