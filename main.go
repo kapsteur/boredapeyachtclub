@@ -22,7 +22,7 @@ type URIJson struct {
 func main() {
 
 	http.HandleFunc("/random", RenderRandom)
-	http.ListenAndServe(":8090", nil)
+	http.ListenAndServe(":80", nil)
 }
 
 func RenderRandom(w http.ResponseWriter, req *http.Request) {
