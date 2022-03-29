@@ -43,32 +43,40 @@ func RenderRandom(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	img := GetRandom()
-	resp, err := http.Get(img)
+	img, err := GetRandom()
 	if err != nil {
-		fmt.Println("Error: File could not be opened")
-		log.Printf("err:%s", err)
-		os.Exit(-1)
+		log.Printf("GetRandom - Err:%s", err)
+
+		time.Sleep(time.Second * 10)
+		http.Redirect(w, req, "/random", http.StatusTemporaryRedirect)
+	} else {
+		resp, err := http.Get(img)
+		if err != nil {
+			log.Printf("Get - Err:%s", err)
+			time.Sleep(time.Second * 10)
+			http.Redirect(w, req, "/random", http.StatusTemporaryRedirect)
+		}
+		defer resp.Body.Close()
+
+		imgDecoded, _, err := image.Decode(resp.Body)
+		if err != nil {
+			log.Printf("Decode - Err:%s", err)
+			time.Sleep(time.Second * 10)
+			http.Redirect(w, req, "/random", http.StatusTemporaryRedirect)
+		}
+
+		r, g, b, a := imgDecoded.At(100, 100).RGBA()
+		fmt.Fprintf(w, "<html><head><meta http-equiv=\"refresh\" content=\"%d;URL=/random\"></head><body style=\"background-color: rgba(%d,%d,%d,%d);\"><img src=\"%s\" style=\"width:100%%;position:absolute;bottom:0;\" /></body></html>", refresh, r/257, g/257, b/257, a/257, img)
 	}
-	defer resp.Body.Close()
-
-	imgDecoded, _, err := image.Decode(resp.Body)
-
-	if err != nil {
-		log.Printf("Error:%s", err)
-	}
-
-	r, g, b, a := imgDecoded.At(100, 100).RGBA()
-	fmt.Fprintf(w, "<html><head><meta http-equiv=\"refresh\" content=\"%d;URL=/random\"></head><body style=\"background-color: rgba(%d,%d,%d,%d);\"><img src=\"%s\" style=\"width:100%%;position:absolute;bottom:0;\" /></body></html>", refresh, r/257, g/257, b/257, a/257, img)
 }
 
-func GetRandom() string {
+func GetRandom() (string, error) {
 	rand.Seed(time.Now().Unix())
 	r := rand.Intn(10000)
 
 	resp, err := http.Get(fmt.Sprintf("https://gateway.ipfs.io/ipfs/QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/%d", r))
 	if err != nil {
-		return ""
+		return "", err
 	}
 	defer resp.Body.Close()
 
@@ -76,10 +84,10 @@ func GetRandom() string {
 
 	err = json.NewDecoder(resp.Body).Decode(&uriJson)
 	if err != nil {
-		return ""
+		return "", err
 	}
 
 	log.Printf("%v", uriJson)
 
-	return strings.Replace(uriJson.Image, "ipfs:/", "https://gateway.ipfs.io/ipfs/", -1)
+	return strings.Replace(uriJson.Image, "ipfs:/", "https://gateway.ipfs.io/ipfs/", -1), nil
 }
