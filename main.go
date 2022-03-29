@@ -46,15 +46,16 @@ func RenderRandom(w http.ResponseWriter, req *http.Request) {
 	img, err := GetRandom()
 	if err != nil {
 		log.Printf("GetRandom - Err:%s", err)
-
 		time.Sleep(time.Second * 10)
 		http.Redirect(w, req, "/random", http.StatusTemporaryRedirect)
+		return
 	} else {
 		resp, err := http.Get(img)
 		if err != nil {
 			log.Printf("Get - Err:%s", err)
 			time.Sleep(time.Second * 10)
 			http.Redirect(w, req, "/random", http.StatusTemporaryRedirect)
+			return
 		}
 		defer resp.Body.Close()
 
@@ -63,6 +64,7 @@ func RenderRandom(w http.ResponseWriter, req *http.Request) {
 			log.Printf("Decode - Err:%s", err)
 			time.Sleep(time.Second * 10)
 			http.Redirect(w, req, "/random", http.StatusTemporaryRedirect)
+			return
 		}
 
 		r, g, b, a := imgDecoded.At(100, 100).RGBA()
