@@ -7,10 +7,7 @@
             }
 
             img {
-                max-width: 1000px;
-                max-height: 1000px;
-                width: auto;
-                height: auto;
+                height: 50%;
                 position: fixed;
                 left: 50%;
                 bottom: 0px;
