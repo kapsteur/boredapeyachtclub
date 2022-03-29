@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"image"
 	"image/png"
 	"log"
@@ -22,13 +23,24 @@ type URIJson struct {
 	} `json:"attributes"`
 }
 
+var t *template.Template
+
 func main() {
+
+	var err error
 
 	image.RegisterFormat("png", "png", png.Decode, png.DecodeConfig)
 
 	log.Printf("APP Started")
 	log.Printf("PORT:%s", os.Getenv("PORT"))
 	http.HandleFunc("/random", RenderRandom)
+
+	t, err = template.ParseFiles("./template.tpl")
+	if err != nil {
+		log.Printf("ParseFiles - Err:%s", err)
+		return
+	}
+
 	http.ListenAndServe(":"+os.Getenv("PORT"), nil)
 }
 
@@ -68,7 +80,30 @@ func RenderRandom(w http.ResponseWriter, req *http.Request) {
 		}
 
 		r, g, b, a := imgDecoded.At(100, 100).RGBA()
-		fmt.Fprintf(w, "<html><head><meta http-equiv=\"refresh\" content=\"%d;URL=/random\"></head><body style=\"background-color: rgba(%d,%d,%d,%d);\"><img src=\"%s\" style=\"width:100%%;position:absolute;bottom:0;\" /></body></html>", refresh, r/257, g/257, b/257, a/257, img)
+
+		data := struct {
+			Refresh int
+			Img     string
+			R       uint32
+			G       uint32
+			B       uint32
+			A       uint32
+		}{
+			refresh,
+			img,
+			r / 257,
+			g / 257,
+			b / 257,
+			a / 257,
+		}
+
+		err = t.Execute(w, data)
+		if err != nil {
+			log.Printf("Execute - Err:%s", err)
+			time.Sleep(time.Second * 10)
+			http.Redirect(w, req, "/random", http.StatusTemporaryRedirect)
+			return
+		}
 	}
 }
 
